@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispute Decision Tool</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f3ef;
+      --surface: #ffffff;
+      --surface2: #eeede8;
+      --border: rgba(0,0,0,0.1);
+      --border-strong: rgba(0,0,0,0.2);
+      --text: #1a1a18;
+      --text-muted: #6b6b65;
+      --text-hint: #9a9a92;
+      --green: #1a7a4a;
+      --green-bg: #e8f5ee;
+      --green-border: #a8d9bc;
+      --red: #b83232;
+      --blue: #1a5fa8;
+      --blue-bg: #e8f0fb;
+      --accent: #2a5cff;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+
+    .container { max-width: 640px; margin: 0 auto; }
+
+    header { margin-bottom: 40px; }
+    header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; margin-bottom: 6px; }
+    header p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+    .card {
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-hint);
+      margin-bottom: 14px;
+    }
+
+    .field label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 6px; }
+
+    .field input[type="number"] {
+      width: 100%;
+      max-width: 220px;
+      padding: 10px 14px;
+      font-size: 15px;
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .field input[type="number"]:focus { border-color: var(--accent); }
+
+    .tab-row { display: flex; gap: 8px; margin-bottom: 16px; }
+
+    .tab {
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      padding: 6px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+    .seg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .seg-btn {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+
+    .seg-btn:hover { border-color: var(--accent); }
+    .seg-btn .seg-name { font-size: 14px; font-weight: 500; display: block; }
+    .seg-btn .seg-note { font-size: 11px; color: var(--text-hint); margin-top: 3px; display: block; }
+
+    .seg-btn.active { border: 2px solid var(--accent); background: var(--blue-bg); }
+    .seg-btn.active .seg-name { color: var(--blue); }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .result-card {
+      background: var(--surface2);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 14px;
+    }
+
+    .result-card.winner { background: var(--green-bg); border: 2px solid var(--green-border); }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--green);
+      color: #fff;
+      display: inline-block;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge.hidden { visibility: hidden; }
+    .option-name { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+
+    .option-value {
+      font-size: 20px;
+      font-weight: 500;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .option-value.pos { color: var(--green); }
+    .option-value.neg { color: var(--red); }
+    .option-meta { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
+
+    .summary-box {
+      background: var(--surface2);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .summary-box strong { color: var(--text); font-weight: 500; }
+
+    .footnote { font-size: 12px; color: var(--text-hint); margin-top: 12px; line-height: 1.7; }
+
+    footer { margin-top: 40px; font-size: 12px; color: var(--text-hint); text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Dispute decision tool</h1>
+      <p>Enter the dispute value and select the case segment to get an instant recommendation.</p>
+    </header>
+
+    <div class="card">
+      <p class="section-label">Dispute value</p>
+      <div class="field">
+        <label>Amount ($)</label>
+        <input type="number" id="disputeVal" value="150" min="1" step="1" />
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Case type</p>
+      <div class="tab-row">
+        <button class="tab active" onclick="setTab('fraud', this)">Fraud</button>
+        <button class="tab" onclick="setTab('nonfraud', this)">Non-fraud</button>
+      </div>
+      <div class="seg-grid" id="segGrid"></div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Recommendation</p>
+      <div class="results-grid" id="resultsGrid"></div>
+      <div class="summary-box" id="summaryBox"></div>
+      <p class="footnote">Agent cost: $32.50/hr &middot; Smart disputes: Stripe takes 30% of recovered value on wins &middot; Manual: full dispute value recovered on win &middot; Ignore/Accept: full value lost + ~$15 bank chargeback fee</p>
+    </div>
+
+    <footer>Fraud Squad &middot; Internal tool</footer>
+  </div>
+
+  <script>
+    const RATE = 32.5 / 60;
+    const STRIPE_CUT = 0.30;
+    const CHARGEBACK_FEE = 15;
+
+    const refData = {
+      fraud: [
+        { label: 'PFY B2C', rate: 0.39 },
+        { label: 'PFY B2B', rate: 0.25, note: 'mostly Riskified cover' },
+        { label: 'PFL B2B', rate: 0.17, note: '2024 data' },
+        { label: 'PFL B2C', rate: 0.17, note: 'limited data' },
+      ],
+      nonfraud: [
+        { label: 'PFY B2C', rate: 0.31 },
+        { label: 'PFY B2B', rate: 0.34 },
+        { label: 'PFL B2B', rate: 0.32, note: '2024 data' },
+        { label: 'PFL B2C', rate: 0.07, note: 'limited data' },
+      ]
+    };
+
+    let currentTab = 'fraud';
+    let selectedRate = 0.39;
+    let selectedLabel = 'PFY B2C';
+
+    function setTab(tab, el) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      const first = refData[tab][0];
+      selectedRate = first.rate;
+      selectedLabel = first.label;
+      renderSeg();
+      calculate();
+    }
+
+    function selectSeg(label, rate) {
+      selectedRate = rate;
+      selectedLabel = label;
+      renderSeg();
+      calculate();
+    }
+
+    function renderSeg() {
+      const grid = document.getElementById('segGrid');
+      grid.innerHTML = refData[currentTab].map(r => `
+        <button class="seg-btn ${r.label === selectedLabel ? 'active' : ''}" onclick="selectSeg('${r.label}', ${r.rate})">
+          <span class="seg-name">${r.label}</span>
+          <span class="seg-note">${r.note || '&nbsp;'}</span>
+        </button>
+      `).join('');
+    }
+
+    function calculate() {
+      const val = parseFloat(document.getElementById('disputeVal').value) || 0;
+      const wr = selectedRate;
+
+      const smartValue = wr * (val * (1 - STRIPE_CUT)) - (5 * RATE);
+      const manualValue = wr * val - (20 * RATE);
+      const ignoreValue = -(val + CHARGEBACK_FEE);
+
+      const options = [
+        { name: 'Smart disputes', value: smartValue, time: '5 min agent' },
+        { name: 'Manual submission', value: manualValue, time: '20 min agent' },
+        { name: 'Ignore / Accept', value: ignoreValue, time: '~1 min' },
+      ];
+
+      const maxVal = Math.max(smartValue, manualValue, ignoreValue);
+
+      document.getElementById('resultsGrid').innerHTML = options.map(o => {
+        const isWinner = Math.abs(o.value - maxVal) < 0.001;
+        const cls = o.value >= 0 ? 'pos' : 'neg';
+        return `
+          <div class="result-card ${isWinner ? 'winner' : ''}">
+            <span class="badge ${isWinner ? '' : 'hidden'}">Best option</span>
+            <div class="option-name">${o.name}</div>
+            <div class="option-value ${cls}">$${o.value.toFixed(2)}</div>
+            <div class="option-meta">${o.time}</div>
+          </div>
+        `;
+      }).join('');
+
+      const winner = options.find(o => Math.abs(o.value - maxVal) < 0.001);
+      const smartVsManual = Math.abs(smartValue - manualValue).toFixed(2);
+      let text = `For a <strong>$${val} ${selectedLabel} ${currentTab === 'fraud' ? 'fraud' : 'non-fraud'} dispute</strong>, `;
+
+      if (winner.name === 'Smart disputes') {
+        text += `<strong>Smart Disputes</strong> is the best option ($${smartValue.toFixed(2)} expected value). Saves $${smartVsManual} in agent time vs manual, even after Stripe's 30% cut.`;
+      } else if (winner.name === 'Manual submission') {
+        text += `<strong>Manual submission</strong> is the best option ($${manualValue.toFixed(2)} expected value) — at this value, Stripe's 30% cut makes manual more worthwhile.`;
+      } else {
+        text += `all active options have negative expected value. <strong>Ignoring</strong> minimises loss ($${ignoreValue.toFixed(2)}) — but double-check the win rate for this segment.`;
+      }
+
+      document.getElementById('summaryBox').innerHTML = text;
+    }
+
+    document.getElementById('disputeVal').addEventListener('input', calculate);
+    renderSeg();
+    calculate();
+  </script>
+</body>
+</html>
